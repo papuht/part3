@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const Person = require('./person')
 app.use(express.static('build'))
 
 app.use(cors())
@@ -26,7 +27,12 @@ app.use(bodyParser.json())
 
 
 app.get('/api/persons/', (request, response) => {
-  response.json(persons)
+  Person
+  .find({})
+  .then(persons => {
+      response.json(persons.map(formatPerson))
+    })
+  
 })
 
 app.get('/api/persons/:id', (request, response) => {
@@ -47,9 +53,21 @@ function getRandomInt(max) {
   return Math.floor(Math.random() * Math.floor(max));
 }
 
+const formatPerson = (person) => {
+  return {
+    name: person.name,
+    number: person.number,
+    id: person._id
+  }
+}
+
+
 
 const testpersons = persons.map(person => person.name)
 console.log(testpersons)
+
+
+
 
 app.post('/api/persons', (request, response) => {
   
@@ -72,15 +90,21 @@ app.post('/api/persons', (request, response) => {
   
   
   
-  const person = {
+  const person = new Person ({
 	  name: body.name,
 	  number: body.number,
 	  id: getRandomInt(99999) 
-  }
+  })
   
+  person
+    .save()
+    .then(savedPerson => {
+      response.json(formatPerson(savedPerson))
+    })
+  /*
   persons = persons.concat(person)
   response.json(person)
-  
+  */
 })
 
 
